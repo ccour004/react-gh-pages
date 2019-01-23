@@ -2,11 +2,13 @@
   "name": "react-gh-pages",
   "version": "0.1.0",
   "private": true,
-  "homepage":"http://ccour004.github.io/react-gh-pages",
+  "homepage": "http://ccour004.github.io/react-gh-pages",
   "dependencies": {
+    "axios": "^0.18.0",
     "gh-pages": "^2.0.1",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
+    "react-router": "^4.3.1",
     "react-scripts": "2.1.3"
   },
   "scripts": {
