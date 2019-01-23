@@ -25,7 +25,7 @@ constructor(props){
   render() {
 const baseURL = "https://accounts.google.com/o/oauth2/v2/auth",
 	scope = "https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fdrive.metadata.readonly",
-	redirect_uri = "http://localhost:3000",
+	redirect_uri = /*"http://localhost:3000"*/"https://ccour004.github.io/react-gh-pages/",
 	response_type = "token", client_id = "219412377030-f3vst5pe2d1srk8b6tjeaocdai04bfkf.apps.googleusercontent.com",
 	sign_in_page = baseURL+'?scope='+scope+"&include_granted_scopes=true&redirect_uri="+redirect_uri+"&response_type="+response_type+"&client_id="+client_id;
 
