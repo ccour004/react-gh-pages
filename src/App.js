@@ -17,6 +17,7 @@ class App extends Component {
             target="_blank"
             rel="noopener noreferrer"
           >
+<img src={logo} className="App-logo" alt="logo" />
             Learn React
           </a>
         </header>
