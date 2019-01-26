@@ -2,16 +2,24 @@ import React, { Component } from 'react';
 //import axios from 'axios';
 //import Button from '@material-ui/core/Button';
 
-import { GoogleLogin } from 'react-google-login';
+import { GoogleLogin,GoogleLogout } from 'react-google-login';
 
 class SignIn extends Component{
     constructor(props){
         super(props);
-	    this.state = {};
+	    this.state = {fullName:''};
     }
 
     responseGoogle = (response) => {
         console.log(response);
+        this.setState({fullName:response.w3.ig});
+        //alert(JSON.stringify(response));
+    }
+
+    logout = (response) => {
+        console.log(response);
+        this.setState({fullName:''});
+        //alert(JSON.stringify(response));
     }
 
     componentDidMount(){
@@ -32,13 +40,16 @@ class SignIn extends Component{
     }
 
   render() {
-    return <GoogleLogin
+    return this.state.fullName==''?<GoogleLogin
     clientId="219412377030-f3vst5pe2d1srk8b6tjeaocdai04bfkf.apps.googleusercontent.com"
-    redirectUri="https://ccour004.github.io/react-gh-pages/"
+    //redirectUri="http://localhost:3000/"//"https://ccour004.github.io/react-gh-pages/"
     buttonText="Login"
     onSuccess={this.responseGoogle}
     onFailure={this.responseGoogle}
-  />;
+  />:<div><h1>{this.state.fullName}</h1><GoogleLogout
+  buttonText="Logout"
+  onLogoutSuccess={this.logout}
+/></div>;
     /*const baseURL = "https://accounts.google.com/o/oauth2/v2/auth",
     scope = //"https://www.googleapis.com/auth/drive.metadata.readonly"
         "https://www.googleapis.com/auth/userinfo.profile",
