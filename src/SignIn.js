@@ -34,7 +34,7 @@ class SignIn extends Component{
   render() {
     return <GoogleLogin
     clientId="219412377030-f3vst5pe2d1srk8b6tjeaocdai04bfkf.apps.googleusercontent.com"
-    //redirectUri="https://ccour004.github.io/react-gh-pages/"
+    redirectUri="https://ccour004.github.io/react-gh-pages/"
     buttonText="Login"
     onSuccess={this.responseGoogle}
     onFailure={this.responseGoogle}
