@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-import { BrowserRouter as Router, Route, Link} from "react-router-dom";
+import { HashRouter/*BrowserRouter*/ as Router, Route, Link} from "react-router-dom";
 import styled from 'styled-components';
 
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
-import {Button} from '@material-ui/core';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -120,7 +119,7 @@ class ButtonAppBar extends Component {
     renderRoutes = ()=>{
         return (
             <div>
-            {this.state.posts.map(function(post){return (<Route path={post.path} exact render={(props)=>post.fullPost}/>)})}
+            {this.state.posts.map(function(post){return (<Route path={post.path} exact render={()=>post.fullPost}/>)})}
             </div>
         )
     }
