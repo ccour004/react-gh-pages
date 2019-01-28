@@ -9,6 +9,8 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 
+import { Link } from "react-router-dom";
+
 import DateIcon from '@material-ui/icons/DateRange';
 import PermIdentityIcon from '@material-ui/icons/PermIdentity';
 
@@ -67,7 +69,7 @@ function SimpleCard(props) {
         </Typography>
       </CardContent>
       <CardActions className={classes.title} style={{justifyContent: 'center'}}>
-        <Button variant="outlined" color="secondary" size="medium">Read More</Button>
+        <Button variant="outlined" component={Link} to={props.path} color="secondary" size="medium">Read More</Button>
       </CardActions>
     </Card>
     </Paper>

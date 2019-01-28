@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { BrowserRouter as Router, Route, Link} from "react-router-dom";
+import styled from 'styled-components';
+
 import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
+import {Button} from '@material-ui/core';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
@@ -12,6 +16,7 @@ import Grid from '@material-ui/core/Grid';
 
 import SignIn from './SignIn.js';
 import SimpleCard from './SimpleCard.js';
+import FullScreenDialog from './FullScreenDialog.js';
 
 const styles = {
   root: {
@@ -48,10 +53,29 @@ const styles = {
   },
 };
 
-class ButtonAppBar extends Component {
+const StyledLink = styled(Link)`
+    text-decoration: none;
+    color: #292030;
+    &:focus, &:hover, &:visited, &:link, &:active {
+        text-decoration: none;
+    }
+`;
 
+class ButtonAppBar extends Component {
     state = {
-        left: false
+        left: false,
+        posts: [
+            {
+            path:'/screen_detox_thoughts/',
+            image:'http://bridgeterincourtney.com/wp-content/uploads/2017/04/gallery-6.jpg',
+            date:'August 6,2018',
+            user:'bridgeterincourtney',
+            title:'screen detox thoughts',
+            category:'Uncategorized',
+            snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
+            fullPost:<div>FULL POST TEXT HERE!</div>
+            }
+        ]
     };
 
     toggleDrawer = (side, open) => () => {
@@ -60,93 +84,80 @@ class ButtonAppBar extends Component {
         });
     };
 
-    render(){
+    handlePublish = (post) =>{
+        this.setState({posts: [...this.state.posts,post]})
+    }
+
+    renderPostList = () =>{
         const { classes } = this.props;
         return (
-            <div className={classes.root}>
-            <AppBar className={classes.root} position="static" color="inherit">
-                <Toolbar>
-                <IconButton className={classes.menuButton} onClick={this.toggleDrawer('left',true)} color="inherit" aria-label="Menu">
-                    <MenuIcon />
-                </IconButton>
-                <Typography variant='h6' color="inherit" className={classes.grow}>
-                    bridget erin courtney<div style={{color:'#565656','fontSize':'20px'}}>organized chaos</div>
-                </Typography>
-                <SignIn/>
-                </Toolbar>
-            </AppBar>
-            <SwipeableDrawer
-                open={this.state.left}
-                onClose={this.toggleDrawer('left', false)}
-                onOpen={this.toggleDrawer('left', true)}
+            <div className={classes.grid}>
+            <Grid container spacing={16}
+            direction="column" 
+            justify="center"
+            alignItems='center'
+            //flexWrap="wrap"
             >
-            <h5 className={classes.main_navigation}>Home<br/>Gallery<br/>Shop</h5>
-        </SwipeableDrawer>
-        <div className={classes.grid}>
-        <Grid container spacing={16}
-        direction="column" 
-        justify="center"
-        alignItems='center'
-        //flexWrap="wrap"
-        >
-        <Grid item xs={12} sm={6}>
-        <SimpleCard 
-            image='http://bridgeterincourtney.com/wp-content/uploads/2017/04/gallery-6.jpg'
-            date='August 6,2018'
-            user='bridgeterincourtney'
-            title='screen detox thoughts'
-            category='Uncategorized'
-            snippet='So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is'
-        />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-        <SimpleCard
-            date='August 6,2018'
-            user='bridgeterincourtney'
-            title='screen detox thoughts'
-            category='uncategorized'
-            snippet='So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is'
-        />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-        <SimpleCard
-            date='August 6,2018'
-            user='bridgeterincourtney'
-            title='screen detox thoughts'
-            category='uncategorized'
-            snippet='So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is'
-        />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-        <SimpleCard
-            date='August 6,2018'
-            user='bridgeterincourtney'
-            title='screen detox thoughts'
-            category='uncategorized'
-            snippet='So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is'
-        />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-        <SimpleCard
-            date='August 6,2018'
-            user='bridgeterincourtney'
-            title='screen detox thoughts'
-            category='uncategorized'
-            snippet='So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is'
-        />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-        <SimpleCard
-            date='August 6,2018'
-            user='bridgeterincourtney'
-            title='screen detox thoughts'
-            category='uncategorized'
-            snippet='So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is'
-        />
-        </Grid>
-      </Grid>
-      </div>
+           { this.state.posts.map(function(post){
+            return (
+                    <Grid item xs={12} sm={6}>
+                    <SimpleCard {...classes}
+                        path={post.path}
+                        image={post.image}
+                        date={post.date}
+                        user={post.user}
+                        title={post.title}
+                        category={post.category}
+                        snippet={post.snippet}
+                        fullPost={post.fullPost}
+                    />
+                    </Grid>)})
+           }
+           </Grid></div>
+        );
+    }
+
+    renderRoutes = ()=>{
+        return (
+            <div>
+            {this.state.posts.map(function(post){return (<Route path={post.path} exact render={(props)=>post.fullPost}/>)})}
             </div>
+        )
+    }
+
+    render(){
+        const { classes } = this.props;
+        return ( 
+            <Router>
+                <div className={classes.root}>
+                <AppBar className={classes.root} position="static" color="inherit">
+                    <Toolbar>
+                    <IconButton className={classes.menuButton} onClick={this.toggleDrawer('left',true)} color="inherit" aria-label="Menu">
+                        <MenuIcon />
+                    </IconButton>
+                    <Typography variant='h6' color="inherit" className={classes.grow}>
+                        <StyledLink to='/'>
+                        bridget erin courtney<div style={{color:'#6B7070','fontSize':'20px',fontWeight:'lighter'}}>organized chaos</div>
+                        </StyledLink>
+                    </Typography>
+                    <FullScreenDialog onPublish={this.handlePublish}/>
+                    &nbsp;&nbsp;
+                    <SignIn/>
+                    </Toolbar>
+                </AppBar>
+                <SwipeableDrawer
+                    open={this.state.left}
+                    onClose={this.toggleDrawer('left', false)}
+                    onOpen={this.toggleDrawer('left', true)}
+                >
+                <h5 className={classes.main_navigation}>Home<br/>Gallery<br/>Shop</h5>
+                </SwipeableDrawer>
+                <div>
+                <Route path='/' exact render={(props)=>this.renderPostList()}/>
+                {this.renderRoutes()}
+                </div>
+                </div>
+            </Router>
         );
     }
 }
