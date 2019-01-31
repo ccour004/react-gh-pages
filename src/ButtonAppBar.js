@@ -19,6 +19,7 @@ import FullScreenDialog from './FullScreenDialog.js';
 import Button from '@material-ui/core/Button';
 
 //CLOUD FIRESTORE
+import { config } from './biddy-blog-firebase-adminsdk-qtzb6-5536d7a1f7.js';
 const firebase = require("firebase");
 // Required for side-effects
 require("firebase/firestore");
@@ -66,30 +67,12 @@ const StyledLink = styled(Link)`
     }
 `;
 
-const config = {
-    apiKey: "AIzaSyANwkEroCgI_qPV3VKX_KryNIa1s1SoGC0",
-    authDomain: "biddy-blog.firebaseapp.com",
-    projectId: "biddy-blog"
-  };
-
 class ButtonAppBar extends Component {
     state = {
         left: false,
         user: null,
         externalPosts: [],
-        provider: new firebase.auth.GoogleAuthProvider()/*,
-        posts: [
-            {
-            path:'/screen_detox_thoughts/',
-            image:'http://bridgeterincourtney.com/wp-content/uploads/2017/04/gallery-6.jpg',
-            date:'August 6,2018',
-            user:'bridgeterincourtney',
-            title:'screen detox thoughts',
-            category:'Uncategorized',
-            snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
-            fullPost:<div>FULL POST TEXT HERE!</div>
-            }
-        ]*/
+        provider: new firebase.auth.GoogleAuthProvider()
     };
 
     toggleDrawer = (side, open) => () => {

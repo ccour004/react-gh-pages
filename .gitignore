@@ -19,7 +19,7 @@
 .env.production.local
 
 # firebase private key / config
-/src/biddy-blog-firebase-adminsdk-qtzb6-5536d7a1f7.json
+/src/biddy-blog-firebase-adminsdk-qtzb6-5536d7a1f7.js
 
 npm-debug.log*
 yarn-debug.log*
