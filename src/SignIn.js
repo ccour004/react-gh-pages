@@ -13,13 +13,12 @@ class SignIn extends Component{
     responseGoogle = (response) => {
         console.log(response);
         this.setState({fullName:response.w3.ig});
-        //alert(JSON.stringify(response));
+        this.props.onAuth(response);
     }
 
     logout = (response) => {
         console.log(response);
         this.setState({fullName:''});
-        //alert(JSON.stringify(response));
     }
 
     componentDidMount(){
@@ -40,7 +39,7 @@ class SignIn extends Component{
     }
 
   render() {
-    return this.state.fullName==''?<GoogleLogin
+    return this.state.fullName===''?<GoogleLogin
     clientId="219412377030-f3vst5pe2d1srk8b6tjeaocdai04bfkf.apps.googleusercontent.com"
     //redirectUri="http://localhost:3000/"//"https://ccour004.github.io/react-gh-pages/"
     buttonText="Login"

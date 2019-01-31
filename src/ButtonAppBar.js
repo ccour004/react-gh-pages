@@ -13,9 +13,15 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import Grid from '@material-ui/core/Grid';
 
-import SignIn from './SignIn.js';
 import SimpleCard from './SimpleCard.js';
 import FullScreenDialog from './FullScreenDialog.js';
+
+import Button from '@material-ui/core/Button';
+
+//CLOUD FIRESTORE
+const firebase = require("firebase");
+// Required for side-effects
+require("firebase/firestore");
 
 const styles = {
   root: {
@@ -60,9 +66,18 @@ const StyledLink = styled(Link)`
     }
 `;
 
+const config = {
+    apiKey: "AIzaSyANwkEroCgI_qPV3VKX_KryNIa1s1SoGC0",
+    authDomain: "biddy-blog.firebaseapp.com",
+    projectId: "biddy-blog"
+  };
+
 class ButtonAppBar extends Component {
     state = {
         left: false,
+        user: null,
+        externalPosts: [],
+        provider: new firebase.auth.GoogleAuthProvider()/*,
         posts: [
             {
             path:'/screen_detox_thoughts/',
@@ -74,7 +89,7 @@ class ButtonAppBar extends Component {
             snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
             fullPost:<div>FULL POST TEXT HERE!</div>
             }
-        ]
+        ]*/
     };
 
     toggleDrawer = (side, open) => () => {
@@ -84,7 +99,8 @@ class ButtonAppBar extends Component {
     };
 
     handlePublish = (post) =>{
-        this.setState({posts: [...this.state.posts,post]})
+        alert("(NEED TO IMPLEMENT: push post data to Firebase collection, or fail if not authorized user)");
+        //this.setState({posts: [...this.state.posts,post]})
     }
 
     renderPostList = () =>{
@@ -97,9 +113,9 @@ class ButtonAppBar extends Component {
             alignItems='center'
             //flexWrap="wrap"
             >
-           { this.state.posts.map(function(post){
+           { this.state.externalPosts!==undefined?this.state.externalPosts.map(function(post){
             return (
-                    <Grid item xs={12} sm={6}>
+                    <Grid key={post.path} item xs={12} sm={6}>
                     <SimpleCard {...classes}
                         path={post.path}
                         image={post.image}
@@ -110,18 +126,73 @@ class ButtonAppBar extends Component {
                         snippet={post.snippet}
                         fullPost={post.fullPost}
                     />
-                    </Grid>)})
+                    </Grid>)
+                })
+                :
+                <div/>
            }
            </Grid></div>
         );
     }
 
     renderRoutes = ()=>{
-        return (
+        return ((
             <div>
-            {this.state.posts.map(function(post){return (<Route path={post.path} exact render={()=>post.fullPost}/>)})}
+            {
+                this.state.externalPosts!==undefined?this.state.externalPosts.map(
+                    function(post){return (<Route key={post.path} path={post.path} exact render={()=>
+                        <div dangerouslySetInnerHTML={{__html: post.fullPost}}/>}/>)}):<div/>
+            }
+            {/*{this.state.posts.map(function(post){return (<Route key={post.path} path={post.path} exact render={()=>post.fullPost}/>)})}*/}
             </div>
-        )
+        ))
+    }
+
+    componentDidMount = ()=>{
+        firebase.initializeApp(config);
+        //this.setState({db:firebase.firestore()});
+        var db = firebase.firestore();
+        db.collection("posts").get().then((querySnapshot) => {
+            querySnapshot.forEach((result) => {
+                this.setState({externalPosts:[...this.state.externalPosts,result.data()]});
+            });
+        });
+        firebase.auth().getRedirectResult().then((result)=>{
+            if(result.user !== null){
+                this.setState({user:result.user});
+                console.log(this.state.user.uid);
+               // var db = firebase.firestore();
+                //DB TESTS
+                /*db.collection("cities").get().then((querySnapshot) => {
+                    querySnapshot.forEach((doc) => {
+                        console.log(`${doc.id} => ${doc.data()}`);
+                    });
+                  });
+                  
+                  db.collection('cities').add({
+                    _id: 'TEMPID',
+                    name: 'Test City',
+                    state: 'TX',
+                    country: 'USA'
+                 });*/
+            }
+        },function(error){
+            console.error(error);
+            //alert("ERROR: "+JSON.stringify(error));
+        });
+    }
+
+    handleSignIn = () =>{
+        firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());
+    }
+
+    handleSignOut = () =>{
+        firebase.auth().signOut().then(()=>{
+            // Sign-out successful.
+            this.setState({user:null});
+          }).catch(function(error) {
+            // An error happened.
+          });
     }
 
     render(){
@@ -141,7 +212,12 @@ class ButtonAppBar extends Component {
                     </Typography>
                     <FullScreenDialog onPublish={this.handlePublish}/>
                     &nbsp;&nbsp;
-                    <SignIn/>
+                    {this.state.user === null?
+                    <Button variant="contained" onClick={this.handleSignIn}>
+                    Login
+                    </Button>:<div style={{outlineStyle: 'solid',outlineWidth:'1px'}}><h5>{this.state.user.displayName}</h5><Button
+                    variant="contained"
+                    onClick={this.handleSignOut}>Logout</Button></div>}
                     </Toolbar>
                 </AppBar>
                 <SwipeableDrawer
