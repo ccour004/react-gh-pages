@@ -81,11 +81,33 @@ class ButtonAppBar extends Component {
         });
     };
 
+    sanitizePath(path){
+        path = encodeURI(path);
+        path = path.replace(new RegExp('[\\)\\(\\{\\}\\[\\]]','g'),'_');
+        return path;
+    }
+
     handlePublish = (post) =>{
-        alert("(NEED TO IMPLEMENT: push post data to Firebase collection, or fail if not authorized user)");
+        post.path = this.sanitizePath(post.path);
+        post._id = Math.random().toString(36).substring(7);
+        this.state.db.collection('posts').doc(post._id).set(post).then(function() {
+            console.log("Document successfully added!");
+        }).catch(function(error) {
+            console.error("Error adding document: ", error);
+        });
         //this.setState({posts: [...this.state.posts,post]})
     }
 
+    handleDelete = (post) =>{
+        //alert("(NEED TO IMPLEMENT: delete post data from Firebase collection, or fail if not authorized user)");
+        console.log("DOCUMENT FOR DELETION WITH TITLE: "+post);
+        if(post !== undefined)
+        this.state.db.collection("posts").doc(post).delete().then(function() {
+            console.log("Document successfully deleted!");
+        }).catch(function(error) {
+            console.error("Error removing document: ", error);
+        });
+    }   
     renderPostList = () =>{
         const { classes } = this.props;
         return (
@@ -96,10 +118,11 @@ class ButtonAppBar extends Component {
             alignItems='center'
             //flexWrap="wrap"
             >
-           { this.state.externalPosts!==undefined?this.state.externalPosts.map(function(post){
+           { this.state.externalPosts!==undefined?this.state.externalPosts.map((post)=>{
             return (
-                    <Grid key={post.path} item xs={12} sm={6}>
+                    <Grid key={post._id} item xs={12} sm={6}>
                     <SimpleCard {...classes}
+                        _id={post._id}
                         path={post.path}
                         image={post.image}
                         date={post.date}
@@ -108,6 +131,7 @@ class ButtonAppBar extends Component {
                         category={post.category}
                         snippet={post.snippet}
                         fullPost={post.fullPost}
+                        onDelete={this.handleDelete}
                     />
                     </Grid>)
                 })
@@ -123,7 +147,7 @@ class ButtonAppBar extends Component {
             <div>
             {
                 this.state.externalPosts!==undefined?this.state.externalPosts.map(
-                    function(post){return (<Route key={post.path} path={post.path} exact render={()=>
+                    function(post){return (<Route key={post._id+'_route'} path={post.path} exact render={()=>
                         <div dangerouslySetInnerHTML={{__html: post.fullPost}}/>}/>)}):<div/>
             }
             {/*{this.state.posts.map(function(post){return (<Route key={post.path} path={post.path} exact render={()=>post.fullPost}/>)})}*/}
@@ -132,37 +156,42 @@ class ButtonAppBar extends Component {
     }
 
     componentDidMount = ()=>{
+        //Initialize Firebase DB and get list of posts.
         firebase.initializeApp(config);
-        //this.setState({db:firebase.firestore()});
         var db = firebase.firestore();
-        db.collection("posts").get().then((querySnapshot) => {
+        this.setState({db});
+        /*db.collection("posts").get().then((querySnapshot) => {
             querySnapshot.forEach((result) => {
                 this.setState({externalPosts:[...this.state.externalPosts,result.data()]});
             });
+        });*/
+        db.collection('posts').onSnapshot((querySnapShot)=>{
+            this.setState({externalPosts: []});
+            querySnapShot.forEach((result) => {
+                this.setState({externalPosts:[...this.state.externalPosts,result.data()]});
+            });
         });
-        firebase.auth().getRedirectResult().then((result)=>{
+
+       firebase.auth().onAuthStateChanged((user)=> {
+            if (user) {
+              // User is signed in.
+              this.setState({user});
+              console.log(this.state.user.uid);
+            } else {
+              // User is signed out.
+              this.setState({user:null});
+            }
+          });
+
+       /* firebase.auth().getRedirectResult().then((result)=>{
             if(result.user !== null){
                 this.setState({user:result.user});
                 console.log(this.state.user.uid);
-               // var db = firebase.firestore();
-                //DB TESTS
-                /*db.collection("cities").get().then((querySnapshot) => {
-                    querySnapshot.forEach((doc) => {
-                        console.log(`${doc.id} => ${doc.data()}`);
-                    });
-                  });
-                  
-                  db.collection('cities').add({
-                    _id: 'TEMPID',
-                    name: 'Test City',
-                    state: 'TX',
-                    country: 'USA'
-                 });*/
             }
         },function(error){
             console.error(error);
             //alert("ERROR: "+JSON.stringify(error));
-        });
+        });*/
     }
 
     handleSignIn = () =>{
@@ -170,12 +199,12 @@ class ButtonAppBar extends Component {
     }
 
     handleSignOut = () =>{
-        firebase.auth().signOut().then(()=>{
+        firebase.auth().signOut()/*.then(()=>{
             // Sign-out successful.
             this.setState({user:null});
           }).catch(function(error) {
             // An error happened.
-          });
+          })*/;
     }
 
     render(){
@@ -211,7 +240,7 @@ class ButtonAppBar extends Component {
                 <h5 className={classes.main_navigation}>Home<br/>Gallery<br/>Shop</h5>
                 </SwipeableDrawer>
                 <div>
-                <Route path='/' exact render={(props)=>this.renderPostList()}/>
+                <Route path='/' exact render={()=>this.renderPostList()}/>
                 {this.renderRoutes()}
                 </div>
                 </div>

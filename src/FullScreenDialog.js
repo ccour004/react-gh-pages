@@ -50,7 +50,7 @@ class FullScreenDialog extends React.Component {
 
   handlePublish = () =>{
     this.setState({ open: false });
-    this.props.onPublish(            {
+    this.props.onPublish({
         path:'/'+this.title.value.toLowerCase().replace(new RegExp(' ', 'g'),'_')+'/',
        // image:'http://bridgeterincourtney.com/wp-content/uploads/2017/04/gallery-6.jpg',
         date:this.date.value,
@@ -58,7 +58,7 @@ class FullScreenDialog extends React.Component {
         title:this.title.value,
         category:this.category.value,
        // snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
-        fullPost:<div>FULL POST TEXT HERE!</div>
+        fullPost:'<div>FULL POST TEXT HERE!</div>'
         });     
   };
 
