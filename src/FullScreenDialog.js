@@ -58,7 +58,7 @@ class FullScreenDialog extends React.Component {
         title:this.title.value,
         category:this.category.value,
        // snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
-        fullPost:'<div>FULL POST TEXT HERE!</div>'
+        fullPost:this.fullPost.value
         });     
   };
 
@@ -66,9 +66,9 @@ class FullScreenDialog extends React.Component {
     const { classes } = this.props;
     return (
       <div>
-        <Button variant="outlined" color="primary" onClick={this.handleClickOpen}>
+        <Button variant="contained" color="primary" onClick={this.handleClickOpen}>
           Add Post
-        </Button>
+        </Button>&nbsp;&nbsp;
         <Dialog
           fullScreen
           open={this.state.open}
@@ -131,6 +131,19 @@ class FullScreenDialog extends React.Component {
                 margin="normal"
             />
           </List>
+          <TextField
+          id="outlined-full-width"
+          label="Label"
+          rows={8}
+          style={{ margin: 8 }}
+          placeholder="Placeholder"
+          helperText="Full width!"
+          fullWidth
+          multiline
+          margin="normal"
+          variant="outlined"
+          inputRef={e1=>this.fullPost=e1}
+        />
         </Dialog>
       </div>
     );

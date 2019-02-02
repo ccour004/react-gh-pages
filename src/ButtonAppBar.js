@@ -70,10 +70,20 @@ const StyledLink = styled(Link)`
 class ButtonAppBar extends Component {
     state = {
         left: false,
+        isAdmin: false,
         user: null,
         externalPosts: [],
         provider: new firebase.auth.GoogleAuthProvider()
     };
+
+    checkIfAdmin= (uid,db)=>{
+        db.collection('admins').onSnapshot((querySnapShot)=>{
+            querySnapShot.forEach((result) => {
+                if(result.get('uid') === uid) this.setState({isAdmin: true});
+            });
+        });
+        this.setState({isAdmin: false});
+    }
 
     toggleDrawer = (side, open) => () => {
         this.setState({
@@ -107,7 +117,8 @@ class ButtonAppBar extends Component {
         }).catch(function(error) {
             console.error("Error removing document: ", error);
         });
-    }   
+    } 
+
     renderPostList = () =>{
         const { classes } = this.props;
         return (
@@ -122,6 +133,7 @@ class ButtonAppBar extends Component {
             return (
                     <Grid key={post._id} item xs={12} sm={6}>
                     <SimpleCard {...classes}
+                        isAdmin={this.state.isAdmin}
                         _id={post._id}
                         path={post.path}
                         image={post.image}
@@ -156,15 +168,12 @@ class ButtonAppBar extends Component {
     }
 
     componentDidMount = ()=>{
-        //Initialize Firebase DB and get list of posts.
+        //Initialize Firebase DB.
         firebase.initializeApp(config);
         var db = firebase.firestore();
         this.setState({db});
-        /*db.collection("posts").get().then((querySnapshot) => {
-            querySnapshot.forEach((result) => {
-                this.setState({externalPosts:[...this.state.externalPosts,result.data()]});
-            });
-        });*/
+
+        //Get list of posts.
         db.collection('posts').onSnapshot((querySnapShot)=>{
             this.setState({externalPosts: []});
             querySnapShot.forEach((result) => {
@@ -172,40 +181,25 @@ class ButtonAppBar extends Component {
             });
         });
 
+       //Set listener for when authentication state changes.
        firebase.auth().onAuthStateChanged((user)=> {
             if (user) {
               // User is signed in.
               this.setState({user});
+              this.checkIfAdmin(user.uid,db);
+
+              //TODO: remove this line to prevent showing uid!
               console.log(this.state.user.uid);
             } else {
               // User is signed out.
               this.setState({user:null});
             }
           });
-
-       /* firebase.auth().getRedirectResult().then((result)=>{
-            if(result.user !== null){
-                this.setState({user:result.user});
-                console.log(this.state.user.uid);
-            }
-        },function(error){
-            console.error(error);
-            //alert("ERROR: "+JSON.stringify(error));
-        });*/
     }
 
-    handleSignIn = () =>{
-        firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());
-    }
+    handleSignIn = () =>{firebase.auth().signInWithRedirect(new firebase.auth.GoogleAuthProvider());}
 
-    handleSignOut = () =>{
-        firebase.auth().signOut()/*.then(()=>{
-            // Sign-out successful.
-            this.setState({user:null});
-          }).catch(function(error) {
-            // An error happened.
-          })*/;
-    }
+    handleSignOut = () =>{firebase.auth().signOut(); this.setState({isAdmin:false});}
 
     render(){
         const { classes } = this.props;
@@ -222,14 +216,7 @@ class ButtonAppBar extends Component {
                         bridget erin courtney<div style={{color:'#6B7070','fontSize':'20px',fontWeight:'lighter'}}>organized chaos</div>
                         </StyledLink>
                     </Typography>
-                    <FullScreenDialog onPublish={this.handlePublish}/>
-                    &nbsp;&nbsp;
-                    {this.state.user === null?
-                    <Button variant="contained" onClick={this.handleSignIn}>
-                    Login
-                    </Button>:<div style={{outlineStyle: 'solid',outlineWidth:'1px'}}><h5>{this.state.user.displayName}</h5><Button
-                    variant="contained"
-                    onClick={this.handleSignOut}>Logout</Button></div>}
+                    {this.state.user !== null && this.state.isAdmin?(<FullScreenDialog onPublish={this.handlePublish}/>):<div/>}
                     </Toolbar>
                 </AppBar>
                 <SwipeableDrawer
@@ -237,7 +224,15 @@ class ButtonAppBar extends Component {
                     onClose={this.toggleDrawer('left', false)}
                     onOpen={this.toggleDrawer('left', true)}
                 >
-                <h5 className={classes.main_navigation}>Home<br/>Gallery<br/>Shop</h5>
+                <h5 className={classes.main_navigation}>
+                    {this.state.user === null?
+                        <Button variant="contained" onClick={this.handleSignIn}>
+                        Login
+                        </Button>:<div style={{outlineStyle: 'solid',outlineWidth:'1px'}}><h5>{this.state.user.displayName}</h5><Button
+                        variant="contained"
+                        onClick={this.handleSignOut}>Logout</Button></div>}
+                    {/*Home<br/>Gallery<br/>Shop*/}
+                </h5>
                 </SwipeableDrawer>
                 <div>
                 <Route path='/' exact render={()=>this.renderPostList()}/>

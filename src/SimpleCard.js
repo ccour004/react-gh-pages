@@ -73,7 +73,8 @@ class SimpleCard extends React.Component{
 
   render(){
     const { classes } = this.props;
-    return (
+    console.log(this.props.isAdmin);
+    return (<div>
         <Paper className={classes.paper} style={{maxWidth: 415}}>
         {this.props.image?<CardMedia className={classes.media} image={this.props.image}/>:<div/>}
       <Card className={classes.card}>
@@ -95,7 +96,6 @@ class SimpleCard extends React.Component{
           <Button variant="outlined" component={Link} to={this.props.path} color="secondary" size="medium">Read More</Button>
         </CardActions>
       </Card>
-      <Button onClick={()=>{this.handleAlertOpen()}}>Delete</Button>
       <Dialog
           open={this.state.alert_open}
           TransitionComponent={this.Transition}
@@ -122,6 +122,7 @@ class SimpleCard extends React.Component{
           </DialogActions>
         </Dialog>
       </Paper>
+              <div>{this.props.isAdmin?<Button variant="contained" color="primary" onClick={()=>{this.handleAlertOpen()}}>Delete Post</Button>:<div/>}</div></div>
     );
   }
 }
