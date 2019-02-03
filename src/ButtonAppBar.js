@@ -106,7 +106,7 @@ class ButtonAppBar extends Component {
         }).catch(function(error) {
             console.error("Error adding post metadata: ", error);
         });
-        this.state.db.collection('full_posts').doc(post._id).set({'html':post.fullPost,'title':post.title}).then(function() {
+        this.state.db.collection('full_posts').doc(post._id).set({'html':post.html,'title':post.title}).then(function() {
             console.log("Post data successfully added!");
         }).catch(function(error) {
             console.error("Error adding post: ", error);
