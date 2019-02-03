@@ -58,7 +58,7 @@ class FullScreenDialog extends React.Component {
         title:this.title.value,
         category:this.category.value,
        // snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
-        fullPost:this.fullPost.value
+        html:this.fullPost.value
         });     
   };
 

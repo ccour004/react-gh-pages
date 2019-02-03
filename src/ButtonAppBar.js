@@ -15,6 +15,7 @@ import Grid from '@material-ui/core/Grid';
 
 import SimpleCard from './SimpleCard.js';
 import FullScreenDialog from './FullScreenDialog.js';
+import FullPost from './FullPost.js';
 
 import Button from '@material-ui/core/Button';
 
@@ -101,21 +102,31 @@ class ButtonAppBar extends Component {
         post.path = this.sanitizePath(post.path);
         post._id = Math.random().toString(36).substring(7);
         this.state.db.collection('posts').doc(post._id).set(post).then(function() {
-            console.log("Document successfully added!");
+            console.log("Post metadata successfully added!");
         }).catch(function(error) {
-            console.error("Error adding document: ", error);
+            console.error("Error adding post metadata: ", error);
+        });
+        this.state.db.collection('full_posts').doc(post._id).set({'html':post.fullPost,'title':post.title}).then(function() {
+            console.log("Post data successfully added!");
+        }).catch(function(error) {
+            console.error("Error adding post: ", error);
         });
         //this.setState({posts: [...this.state.posts,post]})
     }
 
     handleDelete = (post) =>{
         //alert("(NEED TO IMPLEMENT: delete post data from Firebase collection, or fail if not authorized user)");
-        console.log("DOCUMENT FOR DELETION WITH TITLE: "+post);
+        console.log("POST FOR DELETION WITH ID: "+post);
         if(post !== undefined)
         this.state.db.collection("posts").doc(post).delete().then(function() {
-            console.log("Document successfully deleted!");
+            console.log("Post metadata successfully deleted!");
         }).catch(function(error) {
-            console.error("Error removing document: ", error);
+            console.error("Error removing Post metadata: ", error);
+        });
+        this.state.db.collection("full_posts").doc(post).delete().then(function() {
+            console.log("Post data successfully deleted!");
+        }).catch(function(error) {
+            console.error("Error removing Post data: ", error);
         });
     } 
 
@@ -155,12 +166,12 @@ class ButtonAppBar extends Component {
     }
 
     renderRoutes = ()=>{
+        const db = this.state.db;
         return ((
             <div>
             {
                 this.state.externalPosts!==undefined?this.state.externalPosts.map(
-                    function(post){return (<Route key={post._id+'_route'} path={post.path} exact render={()=>
-                        <div dangerouslySetInnerHTML={{__html: post.fullPost}}/>}/>)}):<div/>
+                function(post){return (<Route key={post._id+'_route'} path={post.path} exact /*component=*/render={()=><FullPost post={post} db={db}/>}/>)}):<div/>
             }
             {/*{this.state.posts.map(function(post){return (<Route key={post.path} path={post.path} exact render={()=>post.fullPost}/>)})}*/}
             </div>

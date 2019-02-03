@@ -21,6 +21,9 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Slide from '@material-ui/core/Slide';
 
+import Disqus from 'disqus-react';
+import { config } from './biddy-blog-firebase-adminsdk-qtzb6-5536d7a1f7.js';
+
 const styles = {
     media: {
         height: 5,
@@ -73,6 +76,12 @@ class SimpleCard extends React.Component{
 
   render(){
     const { classes } = this.props;
+    const disqusShortname = config.shortName;
+    const disqusConfig = {
+        url: window.location.href+this.props.path,
+        identifier: this.props._id,
+        title: this.props.title,
+    };
     console.log(this.props.isAdmin);
     return (<div>
         <Paper className={classes.paper} style={{maxWidth: 415}}>
@@ -86,6 +95,7 @@ class SimpleCard extends React.Component{
             {this.props.title}
           </Typography>
           <Typography className={classes.pos} color="textSecondary">
+            <Disqus.CommentCount shortname={disqusShortname} config={disqusConfig}>Comments</Disqus.CommentCount><br/>
             {this.props.category}
           </Typography>
           <Typography component="p" style={{justifyContent: 'center'}}>
@@ -122,7 +132,7 @@ class SimpleCard extends React.Component{
           </DialogActions>
         </Dialog>
       </Paper>
-              <div>{this.props.isAdmin?<Button variant="contained" color="primary" onClick={()=>{this.handleAlertOpen()}}>Delete Post</Button>:<div/>}</div></div>
+      <div>{this.props.isAdmin?<Button variant="contained" color="primary" onClick={()=>{this.handleAlertOpen()}}>Delete Post</Button>:<div/>}</div></div>
     );
   }
 }
