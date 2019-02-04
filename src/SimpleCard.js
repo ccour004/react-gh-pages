@@ -21,6 +21,8 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Slide from '@material-ui/core/Slide';
 
+import FullScreenDialog from './FullScreenDialog.js';
+
 import Disqus from 'disqus-react';
 import { config } from './biddy-blog-firebase-adminsdk-qtzb6-5536d7a1f7.js';
 
@@ -74,6 +76,10 @@ class SimpleCard extends React.Component{
     this.setState({ alert_open: false });
   };
 
+  handleEdit = () =>{
+    this.setState({edit: true});
+  }
+
   render(){
     const { classes } = this.props;
     const disqusShortname = config.shortName;
@@ -83,6 +89,7 @@ class SimpleCard extends React.Component{
         title: this.props.title,
     };
     console.log(this.props.isAdmin);
+    if(this.state.edit)return <FullScreenDialog startOpen onCancel={()=>this.setState({edit:false})} data={this.props} onPublish={this.props.handlePublish}/>;
     return (<div>
         <Paper className={classes.paper} style={{maxWidth: 415}}>
         {this.props.image?<CardMedia className={classes.media} image={this.props.image}/>:<div/>}
@@ -132,7 +139,8 @@ class SimpleCard extends React.Component{
           </DialogActions>
         </Dialog>
       </Paper>
-      <div>{this.props.isAdmin?<Button variant="contained" color="primary" onClick={()=>{this.handleAlertOpen()}}>Delete Post</Button>:<div/>}</div></div>
+      <div>{this.props.isAdmin?<div><Button variant="contained" color="primary" onClick={()=>{this.handleAlertOpen()}}>Delete Post</Button>
+            <Button variant="contained" color="secondary" onClick={()=>{this.handleEdit()}}>Edit Post</Button></div>:<div/>}</div></div>
     );
   }
 }

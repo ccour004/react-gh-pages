@@ -100,7 +100,7 @@ class ButtonAppBar extends Component {
 
     handlePublish = (post) =>{
         post.path = this.sanitizePath(post.path);
-        post._id = Math.random().toString(36).substring(7);
+        if(!post._id)post._id = Math.random().toString(36).substring(7);
         this.state.db.collection('posts').doc(post._id).set(post).then(function() {
             console.log("Post metadata successfully added!");
         }).catch(function(error) {
@@ -154,6 +154,7 @@ class ButtonAppBar extends Component {
                         category={post.category}
                         snippet={post.snippet}
                         fullPost={post.fullPost}
+                        handlePublish={this.handlePublish}
                         onDelete={this.handleDelete}
                     />
                     </Grid>)

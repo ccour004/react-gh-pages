@@ -3,19 +3,18 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
-//import ListItemText from '@material-ui/core/ListItemText';
-//import ListItem from '@material-ui/core/ListItem';
-import List from '@material-ui/core/List';
-//import Divider from '@material-ui/core/Divider';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
-import TextField from '@material-ui/core/TextField';
+import IconLabelTabs from './IconLabelTabs';
 
-//import { DatePicker } from 'material-ui-pickers';
+import InfoView from './InfoView.js';
+import TextView from './TextView.js';
+import PreviewView from './PreviewView.js';
+import CodeView from './CodeView.js';
 
 const styles = theme=>({
   appBar: {
@@ -37,7 +36,8 @@ function Transition(props) {
 
 class FullScreenDialog extends React.Component {
   state = {
-    open: false,
+    open: this.props.startOpen?true:false,
+    data: this.props.data?this.props.data:{'title':'(Title)','date':'(Date)','user':'(User)','category':'(Category)','html':'(Full Post)'}
   };
 
   handleClickOpen = () => {
@@ -46,19 +46,20 @@ class FullScreenDialog extends React.Component {
 
   handleClose = () => {
     this.setState({ open: false });
+    if(this.props.onCancel)this.props.onCancel();
   };
 
   handlePublish = () =>{
     this.setState({ open: false });
     this.props.onPublish({
-        path:'/'+this.title.value.toLowerCase().replace(new RegExp(' ', 'g'),'_')+'/',
+        path:'/'+this.state.data.title.toLowerCase().replace(new RegExp(' ', 'g'),'_')+'/',
        // image:'http://bridgeterincourtney.com/wp-content/uploads/2017/04/gallery-6.jpg',
-        date:this.date.value,
-        user:this.user.value,
-        title:this.title.value,
-        category:this.category.value,
+        date:this.state.data.date,
+        user:this.state.data.user,
+        title:this.state.data.title,
+        category:this.state.data.category,
        // snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
-        html:this.fullPost.value
+        html:this.state.data.html
         });     
   };
 
@@ -88,61 +89,8 @@ class FullScreenDialog extends React.Component {
               </Button>
             </Toolbar>
           </AppBar>
-          <List>
-            <TextField
-                required
-                id="standard-required"
-                label="Required"
-                defaultValue="(Title)"
-                className={classes.textField}
-                inputRef={e1=>this.title=e1}
-                margin="normal"
-            />
-            <TextField
-                required
-                id="standard-required"
-                label="Required"
-                defaultValue="(Date)"
-                className={classes.textField}
-                inputRef={e1=>this.date=e1}
-                margin="normal"
-            />{/*        <DatePicker
-                margin="normal"
-                label="Date picker"
-                value={selectedDate}
-                onChange={this.handleDateChange}
-              /> */}
-                        <TextField
-                required
-                id="standard-required"
-                label="Required"
-                defaultValue="(User)"
-                className={classes.textField}
-                inputRef={e1=>this.user=e1}
-                margin="normal"
-            />
-                        <TextField
-                required
-                id="standard-required"
-                label="Required"
-                defaultValue="(Category)"
-                className={classes.textField}
-                inputRef={e1=>this.category=e1}
-                margin="normal"
-            />
-          </List>
-          <TextField
-          id="outlined-full-width"
-          label="Label"
-          rows={8}
-          style={{ margin: 8 }}
-          placeholder="Placeholder"
-          helperText="Full width!"
-          fullWidth
-          multiline
-          margin="normal"
-          variant="outlined"
-          inputRef={e1=>this.fullPost=e1}
+            <IconLabelTabs views={[<InfoView data={this.state.data}/>,<TextView data={this.state.data}/>,
+                                   <PreviewView data={this.state.data}/>,<CodeView data={this.state.data}/>]}/>
         />
         </Dialog>
       </div>

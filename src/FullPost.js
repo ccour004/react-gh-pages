@@ -34,24 +34,31 @@ class FullPost extends React.Component{
 
     componentDidMount = ()=>{
         //Get post data.
-        this.props.db.collection('full_posts').where("title","==",this.props.post.title).onSnapshot((querySnapShot)=>{
-            querySnapShot.forEach((result) => {
-                this.setState({html:result.data().html});
-                console.log(this.state.html);
+        if(this.props.db)
+            this.props.db.collection('full_posts').where("title","==",this.props.post.title).onSnapshot((querySnapShot)=>{
+                querySnapShot.forEach((result) => {
+                    this.setState({html:result.data().html});
+                    console.log(this.state.html);
+                });
             });
-        });
+        else //If no db provided, then this is a preview post.
+            this.setState({html:this.props.post.html,no_comment:true});
     }
 
     render = ()=>{
         const { classes } = this.props;
-        if(this.state.html === null) return <div/>;
-        const html = this.state.html;
-        const disqusShortname = config.shortName;
-        const disqusConfig = {
-            url: window.location.href,
-            identifier: this.props.post._id,
-            title: this.props.post.title,
-        };
+        //TEMP fix for older reference to 'fullPost' instead of 'html'.
+        if(!this.props.post.html) this.props.post.html = this.props.post.fullPost;
+
+        var disqusShortname,disqusConfig;
+        if(!this.props.no_comment){
+            disqusShortname = config.shortName;
+            disqusConfig = {
+                url: window.location.href,
+                identifier: this.props.post._id,
+                title: this.props.post.title,
+            };
+        }
 
         return(
                 <Card className={classes.card}>
@@ -68,9 +75,9 @@ class FullPost extends React.Component{
                     <Typography className={classes.pos} color="textSecondary">
                         <b><br/>{this.props.post.category.toUpperCase()}</b>
                     </Typography>
-                    <Typography className={classes.p} component="p" dangerouslySetInnerHTML={{__html:html}} style={{justifyContent: 'left'}}/>
+                    <Typography className={classes.p} component="p" dangerouslySetInnerHTML={{__html:this.props.post.html}} style={{justifyContent: 'left'}}/>
                     </CardContent>
-                    <Disqus.DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />
+                    {this.props.no_comment?<div/>:<Disqus.DiscussionEmbed shortname={disqusShortname} config={disqusConfig} />}
                 </Card>
         );
     }
