@@ -30,8 +30,6 @@ const styles = theme => ({
   });
 
 class FullPost extends React.Component{
-    state={};
-
     componentDidMount = ()=>{
         //Get post data.
         if(this.props.db)

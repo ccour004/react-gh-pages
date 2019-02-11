@@ -35,47 +35,41 @@ function Transition(props) {
 }
 
 class FullScreenDialog extends React.Component {
-  state = {
-    open: this.props.startOpen?true:false,
-    data: this.props.data?this.props.data:{'title':'(Title)','date':'(Date)','user':'(User)','category':'(Category)','html':'(Full Post)'}
-  };
-
-  handleClickOpen = () => {
-    this.setState({ open: true });
-  };
-
   handleClose = () => {
-    this.setState({ open: false });
-    if(this.props.onCancel)this.props.onCancel();
+    this.props.onClose();
   };
 
   handlePublish = () =>{
-    this.setState({ open: false });
+    const {data} = this.state;
     this.props.onPublish({
-        path:'/'+this.state.data.title.toLowerCase().replace(new RegExp(' ', 'g'),'_')+'/',
-       // image:'http://bridgeterincourtney.com/wp-content/uploads/2017/04/gallery-6.jpg',
-        date:this.state.data.date,
-        user:this.state.data.user,
-        title:this.state.data.title,
-        category:this.state.data.category,
+        _id: data._id?data._id:Math.random().toString(36).substring(7),
+        path:'/'+data.title.toLowerCase().replace(new RegExp(' ', 'g'),'_')+'/',
+        image:data.image,
+        date:data.date,
+        user:data.user,
+        title:data.title,
+        category:data.category,
        // snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
-        html:this.state.data.html
+        html:data.html
         });     
   };
 
+  constructor(props){
+    super(props);
+    this.state = {data: Object.assign({},this.props.data)};
+  }
+
   render() {
-    const { classes } = this.props;
+    const { classes} = this.props;
+    const {data} = this.state;
     return (
-      <div>
-        <Button variant="contained" color="primary" onClick={this.handleClickOpen}>
-          Add Post
-        </Button>&nbsp;&nbsp;
         <Dialog
           fullScreen
-          open={this.state.open}
+          open={this.props.open}
           onClose={this.handleClose}
           TransitionComponent={Transition}
         >
+        
           <AppBar className={classes.appBar}>
             <Toolbar>
               <IconButton color="inherit" onClick={this.handleClose} aria-label="Close">
@@ -89,11 +83,10 @@ class FullScreenDialog extends React.Component {
               </Button>
             </Toolbar>
           </AppBar>
-            <IconLabelTabs views={[<InfoView data={this.state.data}/>,<TextView data={this.state.data}/>,
-                                   <PreviewView data={this.state.data}/>,<CodeView data={this.state.data}/>]}/>
-        />
-        </Dialog>
-      </div>
+            <IconLabelTabs views={[<InfoView data={data}/>,<TextView data={data}/>,
+                                   <PreviewView data={data}/>,<CodeView data={data}/>]}/>
+     
+            </Dialog>
     );
   }
 }

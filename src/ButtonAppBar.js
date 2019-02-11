@@ -8,14 +8,17 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import SwipeableDrawer from '@material-ui/core/SwipeableDrawer';
 import Grid from '@material-ui/core/Grid';
 
-import SimpleCard from './SimpleCard.js';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 import FullScreenDialog from './FullScreenDialog.js';
 import FullPost from './FullPost.js';
+
+import ImageGridList from './ImageGridList.js';
 
 import Button from '@material-ui/core/Button';
 
@@ -33,8 +36,10 @@ const styles = {
   main_navigation: {
     display: 'block',
     color: '#333333',
-    padding: '21px 0',
+    flexGrow: 1,
+    padding: '40px 0',
     position: 'relative',
+    height: /*120*/220,
     'text-decoration': 'none',
     'font-weight': 'bold',
     transition: 'all .3s ease',
@@ -43,7 +48,9 @@ const styles = {
     'font-size': '16px'
   },
   grid:{
-    padding: '21px'
+    flexGrow: 1,
+    width: '100%',
+    padding: '21px',
   },
   grow: {
     flexGrow: 1,
@@ -54,10 +61,37 @@ const styles = {
     'font-size': '2em',
     'font-weight': 'bold'
   },
+  category:{
+    color: '#003366'
+  },
   menuButton: {
     marginLeft: -12,
     marginRight: 20,
   },
+  card: {
+    marginTop: 20,
+    marginLeft: 20,
+    marginRight: 20,
+    padding: 5,
+    paddingBottom: 65
+    //maxWidth: 1000,
+  },
+  media: {
+    height: 140,
+  },
+  mediaText: {
+      'text-align':'center',
+      'font-size': '4em',
+      'font-family': ['Oswald','sans-serif'],
+      paddingTop: 128,
+      'font-weight': 'bold'
+  },
+  gridList: {
+    width: '100%',
+    height: '100%',
+    'overflow-x': 'hidden',
+    'overflow-y': 'auto',
+  }
 };
 
 const StyledLink = styled(Link)`
@@ -71,11 +105,19 @@ const StyledLink = styled(Link)`
 class ButtonAppBar extends Component {
     state = {
         left: false,
+        open: false,
+        alert: false,
+        data: this.get_canned_data,
         isAdmin: false,
         user: null,
+        category: ['recipes','finance','life','organization','wellness'],
         externalPosts: [],
         provider: new firebase.auth.GoogleAuthProvider()
     };
+
+    get_canned_data = ()=>{
+        return {'title':'(Title '+Math.random().toString(36).substring(7)+')','date':'(Date)','user':'(User)',
+        'category':'wellness','html':'(Full Post)','image':'(Image)'};}
 
     checkIfAdmin= (uid,db)=>{
         db.collection('admins').onSnapshot((querySnapShot)=>{
@@ -99,8 +141,8 @@ class ButtonAppBar extends Component {
     }
 
     handlePublish = (post) =>{
+        this.setState({open: false});
         post.path = this.sanitizePath(post.path);
-        if(!post._id)post._id = Math.random().toString(36).substring(7);
         this.state.db.collection('posts').doc(post._id).set(post).then(function() {
             console.log("Post metadata successfully added!");
         }).catch(function(error) {
@@ -111,11 +153,16 @@ class ButtonAppBar extends Component {
         }).catch(function(error) {
             console.error("Error adding post: ", error);
         });
-        //this.setState({posts: [...this.state.posts,post]})
     }
 
+    handleOpen = () => this.setState({data: this.get_canned_data(),open: true});
+    handleEdit = (val) =>this.setState({data: this.state.externalPosts[val],open: true});
+    handleClose = () =>this.setState({open: false});
+    handleAlertOpen = (val) =>this.setState({data: this.state.externalPosts[val],alert: true});
+    handleAlertClose = () =>this.setState({alert: false});
+
     handleDelete = (post) =>{
-        //alert("(NEED TO IMPLEMENT: delete post data from Firebase collection, or fail if not authorized user)");
+        this.setState({alert:false});
         console.log("POST FOR DELETION WITH ID: "+post);
         if(post !== undefined)
         this.state.db.collection("posts").doc(post).delete().then(function() {
@@ -128,41 +175,124 @@ class ButtonAppBar extends Component {
         }).catch(function(error) {
             console.error("Error removing Post data: ", error);
         });
-    } 
+    }
+
+    renderCategoryButton = (category,text) => {
+        const { classes } = this.props;
+        return(
+            <Button variant={this.state.category.includes(category)?'contained':'outlined'}
+                 className={classes.category} onClick={()=>{this.toggleCategory(category)}}>{text}</Button>
+        )
+    }
+
+    toggleCategory = (category) =>{
+       if(this.state.category.includes(category)){
+            this.setState({category: this.state.category.filter(function(val) { 
+                return val !== category
+            })});
+       }else
+            this.setState(previousState => ({
+                category: [...previousState.category, category]
+                }));
+    }
+
+    renderCategories = () =>{
+        const { classes } = this.props;
+        return(<div>
+                    <Grid container spacing={8} justify='center' style={{paddingBottom: 20}}>
+                        <Grid item> {this.renderCategoryButton('recipes','Recipes')}</Grid>
+                        <Grid item> {this.renderCategoryButton('finance','Finance')}</Grid>
+                        <Grid item> {this.renderCategoryButton('life','Life\'s Messy')}</Grid>
+                        <Grid item> {this.renderCategoryButton('organization','Organization')}</Grid>
+                        <Grid item> {this.renderCategoryButton('wellness','Wellness')}</Grid>
+                        <Grid item> <Button variant='outlined' color='secondary'>Our Favorites</Button></Grid>
+                    </Grid>
+                </div>
+        );
+    }
+
+    renderLogin = () =>{
+        return(
+            this.state.user === null?
+                <Button variant="contained" color='primary' size='small' style={{position:'absolute',left:5,top:5,textSize:'1em'}} onClick={this.handleSignIn}>
+                Login
+                </Button>:
+                <div style={{position:'absolute',left:5,top:5}}><Button
+                variant="contained" size='small'
+                onClick={this.handleSignOut}>{this.state.user.displayName}</Button>
+                {this.state.user !== null && this.state.isAdmin?<Button variant="contained" size='small' color="primary" onClick={this.handleOpen}>
+          Add Post
+        </Button>:<div/>}</div>
+        );
+    }
+
+    renderTopBar = () =>{
+        const { classes } = this.props;
+        return(
+            <AppBar className={classes.main_navigation} position="static" color="inherit" style={{height:'0%'}}>
+            {this.renderLogin()} 
+                <Toolbar>
+                    <Grid container direction='column' spacing={8}>
+                        <Grid item xs={12}>
+                            <Typography variant='h6' color="inherit" className={classes.grow}>
+                                <StyledLink to='/'>
+                                bridget erin courtney<div style={{color:'#6B7070','fontSize':'20px',fontWeight:'lighter'}}>PLAN for a better life</div>
+                                </StyledLink>
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            {this.renderCategories()}
+                        </Grid>
+                    </Grid>
+                </Toolbar>
+            </AppBar>
+        );       
+    }
 
     renderPostList = () =>{
-        const { classes } = this.props;
         return (
-            <div className={classes.grid}>
-            <Grid container spacing={16}
-            direction="column" 
-            justify="center"
-            alignItems='center'
-            //flexWrap="wrap"
+            <React.Fragment><React.Fragment>
+           {this.state.open?<FullScreenDialog startOpen 
+                open={this.state.open}
+                data={this.state.data}
+                onClose={()=>this.setState({open:false})}
+                onPublish={this.handlePublish}/>:(null)}
+                <Dialog
+              open={this.state.alert}
+              TransitionComponent={this.Transition}
+              keepMounted
+              onClose={this.handleClose}
+              aria-labelledby="alert-dialog-slide-title"
+              aria-describedby="alert-dialog-slide-description"
             >
-           { this.state.externalPosts!==undefined?this.state.externalPosts.map((post)=>{
-            return (
-                    <Grid key={post._id} item xs={12} sm={6}>
-                    <SimpleCard {...classes}
-                        isAdmin={this.state.isAdmin}
-                        _id={post._id}
-                        path={post.path}
-                        image={post.image}
-                        date={post.date}
-                        user={post.user}
-                        title={post.title}
-                        category={post.category}
-                        snippet={post.snippet}
-                        fullPost={post.fullPost}
-                        handlePublish={this.handlePublish}
-                        onDelete={this.handleDelete}
-                    />
-                    </Grid>)
-                })
-                :
-                <div/>
-           }
-           </Grid></div>
+              <DialogTitle id="alert-dialog-slide-title">
+                {"DELETE POST??"}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText id="alert-dialog-slide-description">
+                  Are you absolutely sure that you want to delete this post? This will permanently remove it!!
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={this.handleAlertClose} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={()=>this.handleDelete(this.state.data._id)} color="primary">
+                  Delete
+                </Button>
+              </DialogActions>
+            </Dialog>
+            </React.Fragment>
+            <div style={{paddingLeft: '10px',paddingTop: '10px'}}>
+            <ImageGridList 
+                onEdit={(val)=>this.handleEdit(val)}
+                tileData={this.state.externalPosts} 
+                category={this.state.category}
+                isAdmin={this.state.isAdmin}
+                onDelete={this.handleDelete}
+                onAlert={this.handleAlertOpen}
+            />
+          </div></React.Fragment>
         );
     }
 
@@ -172,9 +302,8 @@ class ButtonAppBar extends Component {
             <div>
             {
                 this.state.externalPosts!==undefined?this.state.externalPosts.map(
-                function(post){return (<Route key={post._id+'_route'} path={post.path} exact /*component=*/render={()=><FullPost post={post} db={db}/>}/>)}):<div/>
+                function(post){return (<Route key={post._id+'_route'} path={post.path} exact render={()=><FullPost post={post} db={db}/>}/>)}):(null)
             }
-            {/*{this.state.posts.map(function(post){return (<Route key={post.path} path={post.path} exact render={()=>post.fullPost}/>)})}*/}
             </div>
         ))
     }
@@ -218,38 +347,9 @@ class ButtonAppBar extends Component {
         return ( 
             <Router>
                 <div className={classes.root}>
-                <AppBar className={classes.root} position="static" color="inherit">
-                    <Toolbar>
-                    <IconButton className={classes.menuButton} onClick={this.toggleDrawer('left',true)} color="inherit" aria-label="Menu">
-                        <MenuIcon />
-                    </IconButton>
-                    <Typography variant='h6' color="inherit" className={classes.grow}>
-                        <StyledLink to='/'>
-                        bridget erin courtney<div style={{color:'#6B7070','fontSize':'20px',fontWeight:'lighter'}}>organized chaos</div>
-                        </StyledLink>
-                    </Typography>
-                    {this.state.user !== null && this.state.isAdmin?(<FullScreenDialog onPublish={this.handlePublish}/>):<div/>}
-                    </Toolbar>
-                </AppBar>
-                <SwipeableDrawer
-                    open={this.state.left}
-                    onClose={this.toggleDrawer('left', false)}
-                    onOpen={this.toggleDrawer('left', true)}
-                >
-                <h5 className={classes.main_navigation}>
-                    {this.state.user === null?
-                        <Button variant="contained" onClick={this.handleSignIn}>
-                        Login
-                        </Button>:<div style={{outlineStyle: 'solid',outlineWidth:'1px'}}><h5>{this.state.user.displayName}</h5><Button
-                        variant="contained"
-                        onClick={this.handleSignOut}>Logout</Button></div>}
-                    {/*Home<br/>Gallery<br/>Shop*/}
-                </h5>
-                </SwipeableDrawer>
-                <div>
+                {this.renderTopBar()}
                 <Route path='/' exact render={()=>this.renderPostList()}/>
                 {this.renderRoutes()}
-                </div>
                 </div>
             </Router>
         );

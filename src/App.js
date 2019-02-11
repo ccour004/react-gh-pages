@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 const styles = {
   root: {
     flexGrow: 1,
-    background: '#595674'
+    background: 'lightgray'
   }
 };
 
@@ -23,7 +23,7 @@ class App extends Component {
   };
 
   render() {
-    document.body.style.backgroundColor = '#595674';
+    document.body.style.backgroundColor = 'lightgray';
     const {classes} = this.props;
     return (
       <div className={classes.root}>

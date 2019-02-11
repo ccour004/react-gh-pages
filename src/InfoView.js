@@ -1,5 +1,4 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
 import TextField from '@material-ui/core/TextField';
@@ -20,11 +19,13 @@ const styles = theme=>({
   });
 
 class InfoView extends React.Component {
-
+    constructor(props){
+      super(props);
+      this.state = {data: this.props.data};
+    }
     render(){
         const { classes } = this.props;
-        console.log(this.props.data);
-
+        const { data } = this.state;
         return(
             <List>
             <TextField
@@ -32,8 +33,8 @@ class InfoView extends React.Component {
                 id="standard-required"
                 label="Required"
                 className={classes.textField}
-                defaultValue={this.props.data.title}
-                onChange={e=>this.props.data.title=e.target.value}
+                defaultValue={data.title}
+                onChange={e=>data.title=e.target.value}
                 margin="normal"
             />
             <TextField
@@ -41,28 +42,35 @@ class InfoView extends React.Component {
                 id="standard-required"
                 label="Required"
                 className={classes.textField}
-                defaultValue={this.props.data.date}
-                onChange={e=>this.props.data.date=e.target.value}
+                defaultValue={data.date}
+                onChange={e=>data.date=e.target.value}
                 margin="normal"
             /> 
             <TextField
                 required
                 id="standard-required"
                 label="Required"
-                defaultValue="(User)"
                 className={classes.textField}
-                defaultValue={this.props.data.user}
-                onChange={e=>this.props.data.user=e.target.value}
+                defaultValue={data.user}
+                onChange={e=>data.user=e.target.value}
                 margin="normal"
             />
             <TextField
                 required
                 id="standard-required"
                 label="Required"
-                defaultValue="(Category)"
                 className={classes.textField}
-                defaultValue={this.props.data.category}
-                onChange={e=>this.props.data.category=e.target.value}
+                defaultValue={data.image}
+                onChange={e=>data.image=e.target.value}
+                margin="normal"
+            />
+            <TextField
+                required
+                id="standard-required"
+                label="Required"
+                className={classes.textField}
+                defaultValue={data.category}
+                onChange={e=>data.category=e.target.value}
                 margin="normal"
             />
             <TextField
@@ -75,8 +83,8 @@ class InfoView extends React.Component {
                 multiline
                 margin="normal"
                 variant="outlined"
-                defaultValue={this.props.data.html}
-                onChange={e=>this.props.data.html=e.target.value}
+                defaultValue={data.html}
+                onChange={e=>data.html=e.target.value}
             />
           </List>
         );
