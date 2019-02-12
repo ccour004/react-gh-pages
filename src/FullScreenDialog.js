@@ -35,12 +35,13 @@ function Transition(props) {
 }
 
 class FullScreenDialog extends React.Component {
+  state={};
   handleClose = () => {
     this.props.onClose();
   };
 
   handlePublish = () =>{
-    const {data} = this.state;
+    const {data} = this.props;
     this.props.onPublish({
         _id: data._id?data._id:Math.random().toString(36).substring(7),
         path:'/'+data.title.toLowerCase().replace(new RegExp(' ', 'g'),'_')+'/',
@@ -48,20 +49,25 @@ class FullScreenDialog extends React.Component {
         date:data.date,
         user:data.user,
         title:data.title,
+        cols:data.cols,
         category:data.category,
-       // snippet:'So our screen detox officially ended on Friday. But we got hit by a stomach bug so we didn’t make it until Friday. Which is',
         html:data.html
         });     
   };
 
-  constructor(props){
-    super(props);
-    this.state = {data: Object.assign({},this.props.data)};
-  }
+  componentDidMount = ()=>{
+    //Get post data.
+    this.props.db.collection('full_posts').where("_id","==",this.props.data._id).onSnapshot((querySnapShot)=>{
+        querySnapShot.forEach((result) => {
+            var tempData = this.props.data;
+            tempData['html'] = result.data().html;
+            this.setState({data:tempData});
+        });
+    });
+}
 
   render() {
-    const { classes} = this.props;
-    const {data} = this.state;
+    const { classes,data } = this.props;
     return (
         <Dialog
           fullScreen
@@ -83,8 +89,9 @@ class FullScreenDialog extends React.Component {
               </Button>
             </Toolbar>
           </AppBar>
+          {data.html?
             <IconLabelTabs views={[<InfoView data={data}/>,<TextView data={data}/>,
-                                   <PreviewView data={data}/>,<CodeView data={data}/>]}/>
+                                   <PreviewView data={data}/>,<CodeView data={data}/>]}/>:(null)}
      
             </Dialog>
     );

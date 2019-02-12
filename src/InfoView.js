@@ -19,19 +19,15 @@ const styles = theme=>({
   });
 
 class InfoView extends React.Component {
-    constructor(props){
-      super(props);
-      this.state = {data: this.props.data};
-    }
     render(){
-        const { classes } = this.props;
-        const { data } = this.state;
+        const { classes,data} = this.props;
+        console.log(JSON.stringify(data));
         return(
             <List>
             <TextField
                 required
                 id="standard-required"
-                label="Required"
+                label="Title"
                 className={classes.textField}
                 defaultValue={data.title}
                 onChange={e=>data.title=e.target.value}
@@ -40,7 +36,7 @@ class InfoView extends React.Component {
             <TextField
                 required
                 id="standard-required"
-                label="Required"
+                label="Date"
                 className={classes.textField}
                 defaultValue={data.date}
                 onChange={e=>data.date=e.target.value}
@@ -49,7 +45,7 @@ class InfoView extends React.Component {
             <TextField
                 required
                 id="standard-required"
-                label="Required"
+                label="User"
                 className={classes.textField}
                 defaultValue={data.user}
                 onChange={e=>data.user=e.target.value}
@@ -58,7 +54,7 @@ class InfoView extends React.Component {
             <TextField
                 required
                 id="standard-required"
-                label="Required"
+                label="Image"
                 className={classes.textField}
                 defaultValue={data.image}
                 onChange={e=>data.image=e.target.value}
@@ -67,15 +63,24 @@ class InfoView extends React.Component {
             <TextField
                 required
                 id="standard-required"
-                label="Required"
+                label="Category"
                 className={classes.textField}
                 defaultValue={data.category}
                 onChange={e=>data.category=e.target.value}
                 margin="normal"
             />
             <TextField
+                required
+                id="standard-required"
+                label="Columns"
+                className={classes.textField}
+                defaultValue={data.cols}
+                onChange={e=>data.cols=e.target.value}
+                margin="normal"
+            />
+            <TextField
                 id="outlined-full-width"
-                label="Label"
+                label="Text"
                 rows={8}
                 style={{ margin: 8 }}
                 placeholder="Placeholder"

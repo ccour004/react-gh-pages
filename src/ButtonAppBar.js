@@ -19,14 +19,14 @@ import FullScreenDialog from './FullScreenDialog.js';
 import FullPost from './FullPost.js';
 
 import ImageGridList from './ImageGridList.js';
+import MaterialLink from '@material-ui/core/Link';
 
 import Button from '@material-ui/core/Button';
 
 //CLOUD FIRESTORE
 import { config } from './biddy-blog-firebase-adminsdk-qtzb6-5536d7a1f7.js';
 const firebase = require("firebase");
-// Required for side-effects
-require("firebase/firestore");
+require("firebase/firestore"); // Required for side-effects
 
 const styles = {
   root: {
@@ -38,11 +38,23 @@ const styles = {
     color: '#333333',
     flexGrow: 1,
     padding: '40px 0',
-    position: 'relative',
-    height: /*120*/220,
+    //position: 'relative',
+    height: 190,
     'text-decoration': 'none',
     'font-weight': 'bold',
-    transition: 'all .3s ease',
+    'z-index': 99,
+    'text-transform': 'uppercase',
+    'font-size': '16px'
+  },
+  main_navigation_expanded: {
+    display: 'block',
+    color: '#333333',
+    flexGrow: 1,
+    padding: '40px 0',
+   // position: 'relative',
+    height: 195,
+    'text-decoration': 'none',
+    'font-weight': 'bold',
     'z-index': 99,
     'text-transform': 'uppercase',
     'font-size': '16px'
@@ -56,13 +68,18 @@ const styles = {
     flexGrow: 1,
     color: '#292030',
     'text-align': 'center',
-    'margin-bottom': '5px',
     'font-family': ['Oswald','sans-serif'],
     'font-size': '2em',
     'font-weight': 'bold'
   },
   category:{
+    'font-size': '1em',
     color: '#003366'
+  },
+  categoryPicked:{
+    'font-size': '1.2em',
+    color: '#003366',
+    'font-weight': 'bold'
   },
   menuButton: {
     marginLeft: -12,
@@ -74,7 +91,6 @@ const styles = {
     marginRight: 20,
     padding: 5,
     paddingBottom: 65
-    //maxWidth: 1000,
   },
   media: {
     height: 140,
@@ -110,7 +126,7 @@ class ButtonAppBar extends Component {
         data: this.get_canned_data,
         isAdmin: false,
         user: null,
-        category: ['recipes','finance','life','organization','wellness'],
+        category: /*['recipes','finance','life','organization','wellness']*/'*',
         externalPosts: [],
         provider: new firebase.auth.GoogleAuthProvider()
     };
@@ -142,14 +158,17 @@ class ButtonAppBar extends Component {
 
     handlePublish = (post) =>{
         this.setState({open: false});
+        var db = this.state.db;
+        console.log(JSON.stringify(post));
         post.path = this.sanitizePath(post.path);
-        this.state.db.collection('posts').doc(post._id).set(post).then(function() {
-            console.log("Post metadata successfully added!");
-        }).catch(function(error) {
-            console.error("Error adding post metadata: ", error);
-        });
-        this.state.db.collection('full_posts').doc(post._id).set({'html':post.html,'title':post.title}).then(function() {
+        db.collection('full_posts').doc(post._id).set({'html':post.html,'_id':post._id}).then(function() {
             console.log("Post data successfully added!");
+            delete post.html;
+            db.collection('posts').doc(post._id).set(post).then(function() {
+                console.log("Post metadata successfully added!");
+            }).catch(function(error) {
+                console.error("Error adding post metadata: ", error);
+            });
         }).catch(function(error) {
             console.error("Error adding post: ", error);
         });
@@ -180,24 +199,20 @@ class ButtonAppBar extends Component {
     renderCategoryButton = (category,text) => {
         const { classes } = this.props;
         return(
-            <Button variant={this.state.category.includes(category)?'contained':'outlined'}
-                 className={classes.category} onClick={()=>{this.toggleCategory(category)}}>{text}</Button>
+            <MaterialLink component="button" className={this.state.category === category?classes.categoryPicked:classes.category} 
+                onClick={()=>{this.setState({category})}}>{text}</MaterialLink>
         )
     }
 
-    toggleCategory = (category) =>{
-       if(this.state.category.includes(category)){
-            this.setState({category: this.state.category.filter(function(val) { 
-                return val !== category
-            })});
-       }else
-            this.setState(previousState => ({
-                category: [...previousState.category, category]
-                }));
+    renderFavoritesButton = (category,text) => {
+        const { classes } = this.props;
+        return(
+            <MaterialLink component="button" style={{color:'rgb(106, 90, 205)'}} className={this.state.category === category?classes.categoryPicked:classes.category}
+                onClick={()=>{this.setState({category})}}>{text}</MaterialLink>
+        )
     }
 
     renderCategories = () =>{
-        const { classes } = this.props;
         return(<div>
                     <Grid container spacing={8} justify='center' style={{paddingBottom: 20}}>
                         <Grid item> {this.renderCategoryButton('recipes','Recipes')}</Grid>
@@ -205,7 +220,7 @@ class ButtonAppBar extends Component {
                         <Grid item> {this.renderCategoryButton('life','Life\'s Messy')}</Grid>
                         <Grid item> {this.renderCategoryButton('organization','Organization')}</Grid>
                         <Grid item> {this.renderCategoryButton('wellness','Wellness')}</Grid>
-                        <Grid item> <Button variant='outlined' color='secondary'>Our Favorites</Button></Grid>
+                        <Grid item> {this.renderFavoritesButton('favorites','Our Favorites')}</Grid>
                     </Grid>
                 </div>
         );
@@ -226,33 +241,49 @@ class ButtonAppBar extends Component {
         );
     }
 
-    renderTopBar = () =>{
+    renderTopBar = (hasCategories) =>{
         const { classes } = this.props;
         return(
-            <AppBar className={classes.main_navigation} position="static" color="inherit" style={{height:'0%'}}>
+            <AppBar className={this.state.category === '*'?classes.main_navigation:classes.main_navigation_expanded} position="static" color="inherit">
             {this.renderLogin()} 
                 <Toolbar>
                     <Grid container direction='column' spacing={8}>
                         <Grid item xs={12}>
                             <Typography variant='h6' color="inherit" className={classes.grow}>
-                                <StyledLink to='/'>
+                                <StyledLink to='/' onClick={()=>this.setState({category: '*'})}>
                                 bridget erin courtney<div style={{color:'#6B7070','fontSize':'20px',fontWeight:'lighter'}}>PLAN for a better life</div>
                                 </StyledLink>
                             </Typography>
                         </Grid>
+                        {hasCategories?
                         <Grid item xs={12}>
                             {this.renderCategories()}
-                        </Grid>
+                        </Grid>:(null)}
                     </Grid>
                 </Toolbar>
             </AppBar>
         );       
     }
 
+    renderCategoryBar = () =>{
+        const { classes } = this.props;
+        if (this.state.category !== '*')
+            return <Grid item xs={12}>   
+                <Typography variant='h6' color="inherit" style={{color:'#003366',background: 'white',/*position: 'relative',top:-25*/}} className={classes.grow}>
+                        <StyledLink to='/' onClick={()=>this.setState({category: '*'})}>
+                        HOME /
+                        </StyledLink>
+                        &nbsp;{this.state.category.toUpperCase()}
+                </Typography>
+            </Grid>
+        return (null);
+    }
+
     renderPostList = () =>{
         return (
             <React.Fragment><React.Fragment>
            {this.state.open?<FullScreenDialog startOpen 
+                db={this.state.db}
                 open={this.state.open}
                 data={this.state.data}
                 onClose={()=>this.setState({open:false})}
@@ -298,11 +329,14 @@ class ButtonAppBar extends Component {
 
     renderRoutes = ()=>{
         const db = this.state.db;
+        const nonRootPath = this.renderNonRootPath;
         return ((
             <div>
             {
                 this.state.externalPosts!==undefined?this.state.externalPosts.map(
-                function(post){return (<Route key={post._id+'_route'} path={post.path} exact render={()=><FullPost post={post} db={db}/>}/>)}):(null)
+                function(post){return (
+                    <Route key={post._id+'_route'} path={post.path} exact 
+                        render={()=>nonRootPath(<FullPost post={post} db={db}/>)}/>)}):(null)
             }
             </div>
         ))
@@ -342,15 +376,30 @@ class ButtonAppBar extends Component {
 
     handleSignOut = () =>{firebase.auth().signOut(); this.setState({isAdmin:false});}
 
-    render(){
+    renderRootPath = ()=>{
         const { classes } = this.props;
+        return (<div className={classes.root}>
+            {this.renderTopBar(true)}
+            {this.renderCategoryBar()}
+            {this.renderPostList()}
+        </div>);
+    }
+
+    renderNonRootPath = (inner)=>{
+        const { classes } = this.props;
+        return (<div className={classes.root}>
+            {this.renderTopBar(false)}
+            {inner}
+        </div>);
+    }
+
+    render = ()=>{
         return ( 
             <Router>
-                <div className={classes.root}>
-                {this.renderTopBar()}
-                <Route path='/' exact render={()=>this.renderPostList()}/>
+                <React.Fragment>
+                <Route path='/' exact render={()=>this.renderRootPath()}/>
                 {this.renderRoutes()}
-                </div>
+                </React.Fragment>
             </Router>
         );
     }

@@ -2,12 +2,8 @@ import React from 'react';
 import FullPost from './FullPost.js';
 
 class PreviewView extends React.Component {
-    constructor(props){
-        super(props);
-        this.state = {data: this.props.data};
-      }
     render(){
-        const { data } = this.state;
+        const { data } = this.props;
         return <FullPost post={data}/>
     }
 }

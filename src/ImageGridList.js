@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
+import GridListTileBar from '@material-ui/core/GridListTileBar';
 
 import Card from '@material-ui/core/Card';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -20,18 +21,17 @@ import Slide from '@material-ui/core/Slide';
 
 const styles = theme => ({
   root:{
-
-    width: '95%'
+    width: '95%',
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    overflow: 'hidden',
   },
   gridList: {
     width: '100%',
     //height: '100%',
     // Promote the list into his own layer on Chrome. This cost memory but helps keeping high FPS.
     //transform: 'background-size 4s ease',
-  },
-  gridTile: {
-    padding: 0,
-    marginBottom: 0,
   },
   card: {
     textAlign: 'center',
@@ -66,30 +66,38 @@ class ImageGridList extends React.Component{
 
   renderContent(){
     const {classes,tileData,category,isAdmin,onEdit,onAlert} = this.props;
+    var toolbar = (index)=>{if(!isAdmin) return (null);
+      return <div style={{background:'#393C9C'}}><IconButton style={{color:'white'}} onClick={()=>{onEdit(index)}}>
+      <EditIcon/></IconButton><IconButton onClick={()=>{onAlert(index)}}><DeleteIcon style={{color:'white'}}/></IconButton></div>};
     return (
+      <div className={classes.root}>
         <GridList cellHeight={"auto"} className={classes.gridList} cols={3} spacing={8}>
           {tileData.map((tile,index) => (
-            category.includes(tile.category)?
-            <GridListTile key={tile.image} cols={tile.cols || 1} className={classes.gridTile}>
-            {isAdmin?
-                  <div style={{background:'#393C9C'}}><IconButton style={{color:'white'}} onClick={()=>{onEdit(index)}}>
-                  <EditIcon/></IconButton><IconButton onClick={()=>{onAlert(index)}}><DeleteIcon style={{color:'white'}}/></IconButton></div>:(null)}
+            category === '*' || category.includes(tile.category)?
+            <GridListTile key={tile.image} cols={tile.cols || 1} >
+            {toolbar(index)}
               <Card>
               <CardActionArea component={Link} to={tile.path}>
                 <CardMedia
                   component='img'
                   image={tile.image}
                   title={tile.title}
-                  class={classes.cardMedia}
+                  className={classes.cardMedia}
                 />
                 <CardContent className={classes.cardContent}>
-                      {tile.title.toUpperCase()}
+                      {tile.title}
                 </CardContent>
                 </CardActionArea>
               </Card>
-            </GridListTile>:(null)
+            </GridListTile>/*<GridListTile key={tile.image} cols={tile.cols || 1} component={Link} to={tile.path}>
+                  <img src={tile.image} alt={tile.title} className={classes.cardMedia}/>
+                  <GridListTileBar
+                    title={tile.title}
+                    className={classes.gridTileContent}/>
+            </GridListTile>*/:(null)
           ))}
         </GridList>
+        </div>
     );
   }
 
